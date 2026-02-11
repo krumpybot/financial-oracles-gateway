@@ -462,6 +462,9 @@ app.get('/.well-known/x402', (c) => {
   return c.json({
     version: 1,
     resources,
+    ownershipProofs: [
+      '0x9ae15b17d491cfb2775f07f6f43ec4a44f15a14e67594903719d98771c9da51010bfb030b2c62ea3de973bfaa1ecdf622f898561da2f04b727ea88025723a50a1c'
+    ],
     manifest: `${PUBLIC_URL}/.well-known/x402-manifest.json`,
     instructions: `# Financial Oracles Gateway\n\n${CONFIG.description}\n\n## Quick Start\n\n1. Send a GET request to any endpoint without X-Payment header to see pricing\n2. Pay with USDC on Base network\n3. Include the tx hash in X-Payment header\n\n## Free Demo\n\nTest without payment: \`GET ${PUBLIC_URL}/demo/quote\`\n\n## Bundles (recommended)\n\n- Market Snapshot: \`GET /bundle/market_snapshot/{symbol}\` ($0.02)\n- Sanctions Screen: \`POST /bundle/sanctions_screen\` ($0.02)\n- SEC Snapshot: \`GET /bundle/sec_snapshot/{ticker}\` ($0.04)\n\n## Documentation\n\n- Pricing: ${PUBLIC_URL}/pricing\n- Agent Card: ${PUBLIC_URL}/.well-known/agent.json\n- Website: https://krumpybot.com\n- OpenAPI: ${PUBLIC_URL}/openapi.yaml`,
     metadata: {
