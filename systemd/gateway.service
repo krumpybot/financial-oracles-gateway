@@ -1,0 +1,19 @@
+[Unit]
+Description=Financial Oracles Gateway
+After=perp-dex.service sec-oracle.service sanctions-oracle.service
+Requires=perp-dex.service sec-oracle.service sanctions-oracle.service
+PartOf=financial-oracles.target
+
+[Service]
+Type=simple
+User=krump
+WorkingDirectory=/home/krump/clawd/agents/financial-oracles-gateway
+Environment=PATH=/home/krump/.bun/bin:/usr/bin:/bin
+ExecStart=/home/krump/.bun/bin/bun run src/index.ts
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/financial-oracles/gateway.log
+StandardError=append:/var/log/financial-oracles/gateway.log
+
+[Install]
+WantedBy=financial-oracles.target

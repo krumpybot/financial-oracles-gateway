@@ -1,0 +1,18 @@
+[Unit]
+Description=Perp DEX Oracle API
+After=network-online.target
+PartOf=financial-oracles.target
+
+[Service]
+Type=simple
+User=krump
+WorkingDirectory=/home/krump/clawd/skills/public/perp-dex-agent
+Environment=PATH=/home/krump/clawd/skills/public/perp-dex-agent/.venv/bin:/usr/bin:/bin
+ExecStart=/home/krump/clawd/skills/public/perp-dex-agent/.venv/bin/python scripts/api_server.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/financial-oracles/perp-dex.log
+StandardError=append:/var/log/financial-oracles/perp-dex.log
+
+[Install]
+WantedBy=financial-oracles.target

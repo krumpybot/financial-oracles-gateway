@@ -1,0 +1,18 @@
+[Unit]
+Description=Sanctions Oracle API
+After=network-online.target
+PartOf=financial-oracles.target
+
+[Service]
+Type=simple
+User=krump
+WorkingDirectory=/home/krump/clawd/skills/public/sanctions-oracle
+Environment=PATH=/home/krump/clawd/skills/public/sanctions-oracle/.venv/bin:/usr/bin:/bin
+ExecStart=/home/krump/clawd/skills/public/sanctions-oracle/.venv/bin/python scripts/server.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/financial-oracles/sanctions-oracle.log
+StandardError=append:/var/log/financial-oracles/sanctions-oracle.log
+
+[Install]
+WantedBy=financial-oracles.target

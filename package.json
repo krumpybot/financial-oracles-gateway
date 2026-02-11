@@ -1,0 +1,27 @@
+{
+  "name": "financial-oracles-gateway",
+  "version": "1.0.0",
+  "description": "Lucid Agents gateway for Perp DEX + SEC Oracle",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir=dist --target=bun"
+  },
+  "dependencies": {
+    "@lucid-agents/a2a": "latest",
+    "@lucid-agents/core": "latest",
+    "@lucid-agents/hono": "latest",
+    "@lucid-agents/http": "latest",
+    "@lucid-agents/identity": "latest",
+    "@lucid-agents/payments": "latest",
+    "@lucid-agents/wallet": "latest",
+    "hono": "^4.0.0",
+    "viem": "^2.45.1",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+[Unit]
+Description=Financial Oracles Stack
+After=network-online.target
+Wants=network-online.target
+
+[Install]
+WantedBy=multi-user.target

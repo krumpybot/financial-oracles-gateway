@@ -1,0 +1,603 @@
+openapi: 3.1.0
+info:
+  title: Financial Oracles Gateway
+  version: 1.6.0
+  description: |
+    The most comprehensive x402-native financial data gateway. SEC filings, Treasury, 
+    Forex, Stocks, Crypto, Commodities, Technical Indicators, Analyst Ratings, News, 
+    Sanctions Screening, and more.
+    
+    All paid endpoints return HTTP 402 with x402 payment requirements when called without
+    an X-Payment header. Payment is in USDC on Base network.
+  contact:
+    name: KrumpyBot
+    url: https://krumpybot.com
+  license:
+    name: Proprietary
+    url: https://krumpybot.com
+
+servers:
+  - url: https://agents.krumpybot.com
+    description: Production
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the health status of the gateway and all backend services
+      tags: [System]
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gateway: { type: string }
+                  version: { type: string }
+                  timestamp: { type: string, format: date-time }
+
+  /pricing:
+    get:
+      operationId: getPricing
+      summary: Get all endpoint prices
+      description: Returns pricing for every endpoint in USDC
+      tags: [System]
+      responses:
+        '200':
+          description: Pricing info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currency: { type: string }
+                  network: { type: string }
+                  endpoints: { type: object, additionalProperties: { type: number } }
+
+  /demo/quote:
+    get:
+      operationId: getDemoQuote
+      summary: Free demo stock quote
+      description: Returns a free AAPL stock quote for testing x402 integration
+      tags: [Demo]
+      responses:
+        '200':
+          description: Demo quote
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  symbol: { type: string }
+                  price: { type: number, nullable: true }
+                  demo: { type: boolean }
+
+  /stocks/quote/{symbol}:
+    get:
+      operationId: getStockQuote
+      summary: Real-time stock quote
+      description: Returns current stock price and daily metrics
+      tags: [Stocks]
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+          example: AAPL
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+          description: x402 payment transaction hash
+      responses:
+        '200':
+          description: Stock quote data
+        '402':
+          description: Payment required (x402)
+
+  /stocks/historical/{symbol}:
+    get:
+      operationId: getStockHistorical
+      summary: Historical stock prices
+      tags: [Stocks]
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Historical price data
+        '402':
+          description: Payment required
+
+  /stocks/indices:
+    get:
+      operationId: getStockIndices
+      summary: Major market indices
+      tags: [Stocks]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Market indices data
+        '402':
+          description: Payment required
+
+  /crypto/prices:
+    get:
+      operationId: getCryptoPrices
+      summary: Cryptocurrency prices
+      tags: [Crypto]
+      parameters:
+        - name: ids
+          in: query
+          schema: { type: string }
+          example: bitcoin,ethereum
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Crypto price data
+        '402':
+          description: Payment required
+
+  /crypto/markets:
+    get:
+      operationId: getCryptoMarkets
+      summary: Crypto market overview
+      tags: [Crypto]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Crypto market data
+        '402':
+          description: Payment required
+
+  /forex/rates:
+    get:
+      operationId: getForexRates
+      summary: Foreign exchange rates
+      tags: [Forex]
+      parameters:
+        - name: base
+          in: query
+          schema: { type: string }
+          example: USD
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Forex rate data
+        '402':
+          description: Payment required
+
+  /forex/convert:
+    get:
+      operationId: convertCurrency
+      summary: Currency conversion
+      tags: [Forex]
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: string }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string }
+        - name: amount
+          in: query
+          schema: { type: number }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Conversion result
+        '402':
+          description: Payment required
+
+  /sec/company/{ticker}:
+    get:
+      operationId: getSecCompany
+      summary: SEC company profile
+      description: Get company profile from SEC EDGAR
+      tags: [SEC]
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema: { type: string }
+          example: AAPL
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Company profile data
+        '402':
+          description: Payment required
+
+  /sec/financials/{ticker}:
+    get:
+      operationId: getSecFinancials
+      summary: SEC XBRL financial metrics
+      tags: [SEC]
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Financial metrics with computed ratios
+        '402':
+          description: Payment required
+
+  /sec/insiders/{ticker}:
+    get:
+      operationId: getSecInsiders
+      summary: SEC insider trading data
+      tags: [SEC]
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Form 4 insider trading with sentiment
+        '402':
+          description: Payment required
+
+  /sanctions/name:
+    post:
+      operationId: screenSanctionsName
+      summary: OFAC name screening
+      tags: [Sanctions]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+              required: [name]
+      responses:
+        '200':
+          description: Screening results
+        '402':
+          description: Payment required
+
+  /sanctions/address:
+    post:
+      operationId: screenSanctionsAddress
+      summary: OFAC address screening
+      tags: [Sanctions]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address: { type: string }
+              required: [address]
+      responses:
+        '200':
+          description: Address screening results
+        '402':
+          description: Payment required
+
+  /perp/funding:
+    get:
+      operationId: getPerpFunding
+      summary: Perpetual DEX funding rates
+      tags: [Perp DEX]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Funding rate data across exchanges
+        '402':
+          description: Payment required
+
+  /perp/openinterest:
+    get:
+      operationId: getPerpOpenInterest
+      summary: Perpetual DEX open interest
+      tags: [Perp DEX]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Open interest data
+        '402':
+          description: Payment required
+
+  /perp/arbitrage:
+    get:
+      operationId: getPerpArbitrage
+      summary: Perp DEX arbitrage scanner
+      tags: [Perp DEX]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Arbitrage opportunities
+        '402':
+          description: Payment required
+
+  /fred/indicators:
+    get:
+      operationId: getFredIndicators
+      summary: Key economic indicators
+      tags: [Economics]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Economic indicator data
+        '402':
+          description: Payment required
+
+  /treasury/debt:
+    get:
+      operationId: getTreasuryDebt
+      summary: US national debt
+      tags: [Treasury]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: National debt data
+        '402':
+          description: Payment required
+
+  /treasury/dashboard:
+    get:
+      operationId: getTreasuryDashboard
+      summary: Treasury data dashboard
+      tags: [Treasury]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Comprehensive treasury data
+        '402':
+          description: Payment required
+
+  /indicators/rsi/{symbol}:
+    get:
+      operationId: getRsi
+      summary: RSI technical indicator
+      tags: [Technical]
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: RSI indicator data
+        '402':
+          description: Payment required
+
+  /indicators/macd/{symbol}:
+    get:
+      operationId: getMacd
+      summary: MACD technical indicator
+      tags: [Technical]
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: MACD indicator data
+        '402':
+          description: Payment required
+
+  /analyst/ratings/{symbol}:
+    get:
+      operationId: getAnalystRatings
+      summary: Analyst consensus ratings
+      tags: [Analyst]
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Analyst rating data
+        '402':
+          description: Payment required
+
+  /news/market:
+    get:
+      operationId: getMarketNews
+      summary: Market news headlines
+      tags: [News]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Market news
+        '402':
+          description: Payment required
+
+  /bundle/market_snapshot/{symbol}:
+    get:
+      operationId: getMarketSnapshot
+      summary: Market snapshot bundle
+      description: Combined stock quote + analyst ratings + recent news in a single call
+      tags: [Bundles]
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+          example: AAPL
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Combined market snapshot
+        '402':
+          description: Payment required
+
+  /bundle/sanctions_screen:
+    post:
+      operationId: bundleSanctionsScreen
+      summary: Sanctions screening bundle
+      description: Combined name + address + country sanctions check in a single call
+      tags: [Bundles]
+      parameters:
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                address: { type: string }
+                country: { type: string }
+      responses:
+        '200':
+          description: Combined sanctions screening results
+        '402':
+          description: Payment required
+
+  /bundle/sec_snapshot/{ticker}:
+    get:
+      operationId: bundleSecSnapshot
+      summary: SEC company snapshot
+      description: Combined company profile + financials + insider trades + events
+      tags: [Bundles]
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema: { type: string }
+          example: AAPL
+        - name: X-Payment
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Comprehensive SEC company snapshot
+        '402':
+          description: Payment required
+
+tags:
+  - name: System
+    description: Health, pricing, and status endpoints (free)
+  - name: Demo
+    description: Free demo endpoints for testing
+  - name: Bundles
+    description: Task-oriented multi-source bundles
+  - name: Stocks
+    description: Stock market data
+  - name: Crypto
+    description: Cryptocurrency market data
+  - name: Forex
+    description: Foreign exchange rates
+  - name: SEC
+    description: SEC EDGAR filings and data
+  - name: Sanctions
+    description: OFAC sanctions screening
+  - name: Perp DEX
+    description: Perpetual DEX market data
+  - name: Economics
+    description: FRED economic indicators
+  - name: Treasury
+    description: US Treasury fiscal data
+  - name: Technical
+    description: Technical analysis indicators
+  - name: Analyst
+    description: Analyst ratings and targets
+  - name: News
+    description: Market and company news

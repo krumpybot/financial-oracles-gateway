@@ -1,0 +1,18 @@
+[Unit]
+Description=SEC Oracle API
+After=network-online.target
+PartOf=financial-oracles.target
+
+[Service]
+Type=simple
+User=krump
+WorkingDirectory=/home/krump/clawd/skills/public/sec-oracle
+Environment=PATH=/home/krump/clawd/skills/public/sec-oracle/.venv/bin:/usr/bin:/bin
+ExecStart=/home/krump/clawd/skills/public/sec-oracle/.venv/bin/python scripts/server.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/financial-oracles/sec-oracle.log
+StandardError=append:/var/log/financial-oracles/sec-oracle.log
+
+[Install]
+WantedBy=financial-oracles.target
