@@ -1,128 +1,136 @@
 # Financial Oracles Gateway
 
-A unified gateway for SEC filings and perpetual DEX data with x402 micropayments.
+The most comprehensive x402-native financial data gateway. 69 endpoints across SEC filings, Treasury, Forex, Stocks, Crypto, Commodities, Technical Indicators, Analyst Ratings, News, Sanctions Screening, and more.
 
-## Features
+**Pay per call with USDC on Base. No API keys. No subscriptions.**
 
-- **SEC Oracle**: Company profiles, XBRL financials, insider trading, 8-K events
-- **Perp DEX Oracle**: Funding rates, open interest, arbitrage detection
-- **Combined Analysis**: Earnings-arbitrage signals, insider sentiment
-- **x402 Payments**: Micropayments via Base/USDC
-- **ERC-8004 Identity**: Onchain agent registration
+🌐 **Live**: [agents.krumpybot.com](https://agents.krumpybot.com)  
+📖 **Docs**: [krumpybot.com](https://krumpybot.com)  
+🔍 **Discovery**: `GET /.well-known/x402` | `GET /.well-known/agent.json`
 
 ## Quick Start
 
+### 1. Test (free)
 ```bash
-# Install dependencies
-bun install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your settings
-
-# Start backends first
-# SEC Oracle on :8001
-# Perp DEX on :8000
-
-# Start gateway
-bun run start
+# Free demo endpoint - no payment needed
+curl https://agents.krumpybot.com/demo/quote
 ```
 
-## Endpoints
+### 2. See pricing
+```bash
+# Any endpoint without X-Payment returns 402 with pricing
+curl https://agents.krumpybot.com/stocks/quote/AAPL
+# Returns: { x402Version: 1, accepts: [{ maxAmountRequired: "5000", ... }] }
+```
 
-### Free (No Payment)
+### 3. Pay & get data
+```bash
+# After paying via x402 (USDC on Base), include tx hash
+curl -H "X-Payment: 0x<tx_hash>" https://agents.krumpybot.com/stocks/quote/AAPL
+```
 
+## Endpoints (69)
+
+### 🆓 Free
 | Endpoint | Description |
 |----------|-------------|
-| `GET /` | Gateway info |
-| `GET /health` | Health check |
-| `GET /pricing` | Pricing info |
-| `GET /.well-known/agent.json` | A2A/ERC-8004 agent card |
+| `GET /demo/quote` | Free AAPL stock quote (test x402 flow) |
+| `GET /health` | Gateway + backend health status |
+| `GET /pricing` | All endpoint prices |
+| `GET /stats` | Uptime, cache, endpoint count |
 
-### Paid (x402)
+### 📦 Bundles (task-oriented, recommended)
+| Endpoint | Price | Description |
+|----------|-------|-------------|
+| `GET /bundle/market_snapshot/:symbol` | $0.02 | Quote + analyst ratings + news |
+| `POST /bundle/sanctions_screen` | $0.02 | Name + address + country screening |
+| `GET /bundle/sec_snapshot/:ticker` | $0.04 | Company + financials + insiders + events |
 
-| Endpoint | Price (USDC) | Description |
-|----------|--------------|-------------|
-| `GET /sec/company/:ticker` | $0.005 | Company profile |
-| `GET /sec/financials/:ticker` | $0.020 | XBRL financials |
-| `GET /sec/insiders/:ticker` | $0.030 | Insider trading |
-| `GET /sec/events/:ticker` | $0.020 | 8-K events |
-| `GET /sec/batch` | $0.050 | Batch query |
-| `GET /perp/funding` | $0.005 | Funding rates |
-| `GET /perp/openinterest` | $0.005 | Open interest |
-| `GET /perp/arbitrage` | $0.010 | Arbitrage opportunities |
-| `GET /analysis/earnings-arbitrage/:ticker` | $0.030 | Combined analysis |
-| `GET /analysis/insider-signal/:ticker` | $0.030 | Insider sentiment |
+### 📈 Stocks ($0.005-0.01)
+`GET /stocks/quote/:symbol` · `GET /stocks/historical/:symbol` · `GET /stocks/indices`
 
-## x402 Payment Flow
+### 🪙 Crypto ($0.002-0.005)
+`GET /crypto/prices` · `GET /crypto/markets` · `GET /crypto/historical`
 
-1. Request without payment → 402 response with payment details
-2. Send USDC to receiver address on Base
-3. Retry request with `X-Payment: <tx_hash>` header
+### 💱 Forex ($0.002-0.005)
+`GET /forex/rates` · `GET /forex/convert` · `GET /forex/historical`
+
+### 📊 SEC Filings ($0.005-0.05)
+`GET /sec/company/:ticker` · `GET /sec/financials/:ticker` · `GET /sec/insiders/:ticker` · `GET /sec/events/:ticker` · `GET /sec/batch` · `GET /sec/13f/:cik`
+
+### 🛡️ Sanctions ($0.005-0.05)
+`POST /sanctions/address` · `POST /sanctions/name` · `POST /sanctions/batch` · `GET /sanctions/country/:code`
+
+### 📉 Perp DEX ($0.005-0.01)
+`GET /perp/funding` · `GET /perp/openinterest` · `GET /perp/arbitrage`
+
+### 🏛️ Treasury ($0.002-0.01)
+`GET /treasury/debt` · `GET /treasury/spending` · `GET /treasury/revenue` · `GET /treasury/auctions` · `GET /treasury/dashboard`
+
+### 📈 FRED Economics ($0.003-0.01)
+`GET /fred/series/:id` · `GET /fred/indicators` · `GET /fred/dashboard` · `GET /fred/search`
+
+### 🏦 Bank Health ($0.005-0.03)
+`GET /banks/search` · `GET /banks/institution/:cert` · `GET /banks/financials/:cert` · `GET /banks/health/:cert` · `GET /banks/failures` · `GET /banks/at-risk`
+
+### 🔮 Prediction Markets ($0.005-0.02)
+`GET /prediction/markets` · `GET /prediction/prices/:id` · `GET /prediction/arbitrage` · `GET /prediction/event/:id`
+
+### 📐 Technical Indicators ($0.003-0.01)
+`GET /indicators/sma/:symbol` · `GET /indicators/ema/:symbol` · `GET /indicators/rsi/:symbol` · `GET /indicators/macd/:symbol` · `GET /indicators/bbands/:symbol` · `GET /indicators/batch/:symbol`
+
+### 🏢 Fundamentals ($0.01-0.02)
+`GET /fundamentals/profile/:symbol` · `GET /fundamentals/ratios/:symbol` · `GET /fundamentals/metrics/:symbol`
+
+### 📰 News & Analyst ($0.005-0.01)
+`GET /news/market` · `GET /news/company/:symbol` · `GET /analyst/ratings/:symbol` · `GET /analyst/targets/:symbol`
+
+### 📅 Calendars ($0.005)
+`GET /calendar/earnings` · `GET /calendar/dividends` · `GET /calendar/ipo` · `GET /calendar/economic`
+
+### 🏭 Commodities ($0.005)
+`GET /commodities/prices` · `GET /commodities/metals`
+
+### 📊 BLS Labor ($0.005)
+`GET /bls/employment` · `GET /bls/cpi` · `GET /bls/series/:id`
+
+### 🔬 Analysis ($0.02-0.03)
+`GET /analysis/earnings-arbitrage/:ticker` · `GET /analysis/insider-signal/:ticker` · `GET /analysis/wallet-compliance/:address`
+
+## MCP Server
+
+An auto-generated MCP (Model Context Protocol) server is included for AI agent tool discovery:
 
 ```bash
-# Without payment
-curl http://localhost:3000/sec/company/AAPL
-# Returns 402 with payment instructions
-
-# With payment
-curl -H "X-Payment: 0x..." http://localhost:3000/sec/company/AAPL
-# Returns data
+cd mcp-server
+npm install && npm run build
+npm start  # stdio transport
 ```
 
-## Agent Card
+## x402 Discovery
 
-Available at `/.well-known/agent.json`:
+This gateway implements the x402 discovery standard:
 
-```json
-{
-  "name": "financial-oracles",
-  "version": "1.0.0",
-  "identity": {
-    "registry": "0x8004...",
-    "chainId": 8453
-  },
-  "x402": {
-    "enabled": true,
-    "network": "base",
-    "receiver": "0x71A2...",
-    "currency": "USDC"
-  },
-  "entrypoints": [...]
-}
-```
+- **Well-Known URL**: `GET /.well-known/x402` — lists all 69 endpoints
+- **Agent Card**: `GET /.well-known/agent.json` — ERC-8004 compatible agent manifest
+- **Per-Endpoint Manifests**: `GET /.well-known/x402/<endpoint>.json`
 
-## Configuration
+## Tech Stack
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Gateway port | 3000 |
-| `SEC_ORACLE_URL` | SEC Oracle backend | http://localhost:8001 |
-| `PERP_DEX_URL` | Perp DEX backend | http://localhost:8000 |
-| `RECEIVER_ADDRESS` | Payment receiver | Required |
-| `NETWORK` | Payment network | base |
-| `CHAIN_ID` | ERC-8004 chain | 8453 |
+- **Runtime**: [Bun](https://bun.sh) + [Hono](https://hono.dev)
+- **Payments**: [Lucid Agents SDK](https://github.com/daydreamsai/lucid-agents) (x402 + ERC-8004)
+- **Network**: Base (USDC)
+- **Identity**: ERC-8004 (Agent ID: 22821)
 
-## Architecture
+## Development
 
-```
-┌─────────────────────────────────────────────────────┐
-│                 Financial Oracles Gateway           │
-│                    (Hono + x402)                    │
-├─────────────────────────────────────────────────────┤
-│  /.well-known/agent.json  │  ERC-8004 Identity     │
-│  /health, /pricing        │  Free endpoints        │
-│  /sec/*                   │  SEC Oracle proxy      │
-│  /perp/*                  │  Perp DEX proxy        │
-│  /analysis/*              │  Combined analysis     │
-└───────────────┬───────────────────┬─────────────────┘
-                │                   │
-        ┌───────▼───────┐   ┌───────▼───────┐
-        │  SEC Oracle   │   │   Perp DEX    │
-        │    :8001      │   │    :8000      │
-        └───────────────┘   └───────────────┘
+```bash
+bun install
+cp .env.example .env  # configure API keys
+bun run dev           # hot-reload
+bun run build         # production build
 ```
 
 ## License
 
-MIT
+Proprietary — [KrumpyBot](https://krumpybot.com)
