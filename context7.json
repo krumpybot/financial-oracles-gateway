@@ -1,0 +1,14 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Financial Oracles Gateway",
+  "description": "x402 micropayment-enabled API gateway providing 69 financial data endpoints (stocks, crypto, forex, SEC filings, technical indicators, analyst ratings, news, sanctions screening) with USDC payments on Base network",
+  "folders": ["src", "mcp-server"],
+  "excludeFolders": ["node_modules", "dist"],
+  "excludeFiles": ["bun.lock", "tsconfig.json"],
+  "rules": [
+    "All endpoints require x402 micropayments in USDC on Base network",
+    "Use the .well-known/x402-manifest.json for endpoint discovery",
+    "Payment amounts are in USDC with 6 decimal places (e.g., 5000 = $0.005)",
+    "The MCP server provides tool-based access to all endpoints"
+  ]
+}
